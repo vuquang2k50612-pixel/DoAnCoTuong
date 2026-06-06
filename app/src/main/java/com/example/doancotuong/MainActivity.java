@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Bien doi ben ban co
     private boolean isCurrentlyFlipped = false;
+    private List<String> gameHistory = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button btnStartGame = findViewById(R.id.btnStartGame);
         Button btnRematch = findViewById(R.id.btnRematch);
+        Button btnHistory = findViewById(R.id.btnHistory);
 
         initGame(false);
         btnStartGame.setOnClickListener(v -> {
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         boardView.setGameListener(winnerText -> {
             layoutGameOver.setVisibility(View.VISIBLE);
             txtWinner.setText(winnerText);
+            gameHistory.add("Ván " + (gameHistory.size() + 1) + ": " + winnerText);
         });
 
         btnRematch.setOnClickListener(v -> {
@@ -54,6 +57,50 @@ public class MainActivity extends AppCompatActivity {
 
             initGame(isCurrentlyFlipped);
         });
+
+        btnHistory.setOnClickListener(v -> {
+            // Thêm dữ liệu mẫu nếu lịch sử trống để bạn kiểm tra
+            if (gameHistory.isEmpty()) {
+                gameHistory.add("Ván 1: ĐỎ THẮNG! (Số nước đi: 25)");
+                gameHistory.add("Ván 2: ĐEN THẮNG! (Số nước đi: 32)");
+                gameHistory.add("Ván 3: ĐỎ THẮNG! (Số nước đi: 18)");
+            }
+
+            StringBuilder historyText = new StringBuilder("Lịch sử ván đấu:\n\n");
+            for (String record : gameHistory) {
+                historyText.append(record).append("\n");
+            }
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Lịch sử")
+                    .setMessage(historyText.toString())
+                    .setPositiveButton("Đóng", null)
+                    .show();
+        });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("isCurrentlyFlipped", isCurrentlyFlipped);
+        outState.putStringArrayList("gameHistory", new ArrayList<>(gameHistory));
+        outState.putSerializable("pieceList", new ArrayList<>(pieceList));
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        isCurrentlyFlipped = savedInstanceState.getBoolean("isCurrentlyFlipped", false);
+        gameHistory = savedInstanceState.getStringArrayList("gameHistory");
+        if (gameHistory == null) {
+            gameHistory = new ArrayList<>();
+        }
+        
+        List<Piece> savedPieces = (List<Piece>) savedInstanceState.getSerializable("pieceList");
+        if (savedPieces != null) {
+            pieceList = savedPieces;
+            boardView.setPieces(pieceList);
+            layoutStartScreen.setVisibility(View.GONE);
+        }
     }
 
     private void initGame(boolean flipBoard) {

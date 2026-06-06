@@ -25,6 +25,7 @@ public class ChessBoardView extends View {
     private boolean isGameOver = false;
     private boolean isRedTurn = true;
     private boolean isFlipped = false;
+    private int moveCount = 0;
 
     // Kho lưu trữ ảnh (Cache) để chống tràn RAM (OutOfMemory)
     private Map<Integer, Bitmap> bitmapCache = new HashMap<>();
@@ -85,6 +86,7 @@ public class ChessBoardView extends View {
         this.isGameOver = false;
         this.isRedTurn = true; // Đỏ luôn đi trước
         this.selectedPiece = null;
+        this.moveCount = 0;
         invalidate();
     }
 
@@ -234,8 +236,9 @@ public class ChessBoardView extends View {
 
 
 
-     // Ham xu ly khi ket thuc 1 nuoc di
+    // Ham xu ly khi ket thuc 1 nuoc di
      private void processTurnEnd() {
+         moveCount++;
          isRedTurn = !isRedTurn;
          Piece.Color nextColor = isRedTurn ? Piece.Color.Red : Piece.Color.Black;
 
@@ -249,7 +252,7 @@ public class ChessBoardView extends View {
              isGameOver = true;
              String winner = isRedTurn ? "ĐEN THẮNG!" : "ĐỎ THẮNG!";
              if(gameListener != null) {
-                 gameListener.onCheckmate(winner);
+                 gameListener.onCheckmate(winner + " (Số nước đi: " + (moveCount / 2) + ")");
              }
          }
      }
