@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnHistory.setOnClickListener(v -> {
             if (gameHistory.isEmpty()) {
-                gameHistory.add("Ván 1: ĐỎ THẮNG! (Số nước đi: 25)");
+                gameHistory.add("Chưa có ván nào hoàn thành.");
             }
             StringBuilder historyText = new StringBuilder("Lịch sử ván đấu:\n\n");
             for (String record : gameHistory) {
@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < 5; i++) {
                 redBag.add(new Piece(types[i], Piece.Color.Red, 0, 0, redRes[i]));
                 redBag.add(new Piece(types[i], Piece.Color.Red, 0, 0, redRes[i]));
-
                 blackBag.add(new Piece(types[i], Piece.Color.Black, 0, 0, blackRes[i]));
                 blackBag.add(new Piece(types[i], Piece.Color.Black, 0, 0, blackRes[i]));
             }
@@ -131,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 p.isFaceDown = true;
                 pieceList.add(p);
             }
+
             int[] redStartX = {0, 1, 2, 3, 5, 6, 7, 8, 1, 7, 0, 2, 4, 6, 8};
             int[] redStartY = {9, 9, 9, 9, 9, 9, 9, 9, 7, 7, 6, 6, 6, 6, 6};
             for (int i = 0; i < 15; i++) {
