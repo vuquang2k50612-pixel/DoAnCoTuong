@@ -9,6 +9,7 @@ public class Piece implements Serializable {
     public Color color;
     public int x,y;
     public int resID;
+    public boolean isFaceDown = false;
 
     public Piece (Type type, Color color, int x, int y, int resID){
         this.type = type;

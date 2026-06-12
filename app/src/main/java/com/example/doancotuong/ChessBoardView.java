@@ -11,7 +11,6 @@ import android.media.SoundPool;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +26,11 @@ public class ChessBoardView extends View {
     private boolean isFlipped = false;
     private int moveCount = 0;
 
-    // Kho lưu trữ ảnh (Cache) để chống tràn RAM (OutOfMemory)
     private Map<Integer, Bitmap> bitmapCache = new HashMap<>();
     private Paint shadowPaint;
     private SoundPool soundPool;
     private int soundMove, soundEat, soundCheck;
+
     public interface GameListener {
         void onCheckmate(String winnerText);
     }
@@ -40,28 +39,22 @@ public class ChessBoardView extends View {
         this.gameListener = listener;
     }
 
-
     public ChessBoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         boardImg = BitmapFactory.decodeResource(getResources(), R.drawable.bancotuong);
         shadowPaint = new Paint();
         shadowPaint.setColor(android.graphics.Color.parseColor("#66000000"));
 
-        // Khởi tạo sound
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build();
-        soundPool = new SoundPool.Builder()
-                .setMaxStreams(3)
-                .setAudioAttributes(audioAttributes)
-                .build();
+        soundPool = new SoundPool.Builder().setMaxStreams(3).setAudioAttributes(audioAttributes).build();
         soundMove = soundPool.load(context, R.raw.move, 1);
         soundEat = soundPool.load(context, R.raw.eat, 1);
         soundCheck = soundPool.load(context, R.raw.check, 1);
     }
 
-    // Hàm lấy ảnh từ Cache
     private Bitmap getBitmap(int resId) {
         if (!bitmapCache.containsKey(resId)) {
             Bitmap bmp = BitmapFactory.decodeResource(getResources(), resId);
@@ -78,35 +71,26 @@ public class ChessBoardView extends View {
         invalidate();
     }
 
-
-    // Ham choi lai van nx
     public void resetGame(List<Piece> newPieces, boolean flipBoard) {
         this.pieces = newPieces;
         this.isFlipped = flipBoard;
         this.isGameOver = false;
-        this.isRedTurn = true; // Đỏ luôn đi trước
+        this.isRedTurn = true;
         this.selectedPiece = null;
         this.moveCount = 0;
         invalidate();
     }
 
-   // Giao dien ban co
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
         float boardMargin = getWidth() * 0.1f;
-        RectF dstBoard = new RectF(
-                boardMargin,
-                boardMargin,
-                getWidth() - boardMargin,
-                getHeight() - boardMargin
-        );
+        RectF dstBoard = new RectF(boardMargin, boardMargin, getWidth() - boardMargin, getHeight() - boardMargin);
         canvas.drawBitmap(boardImg, null, dstBoard, null);
 
         float gridWidth = dstBoard.width();
         float gridHeight = dstBoard.height();
-
         float paddingLeft = gridWidth * 0.025f;
         float paddingRight = gridWidth * 0.025f;
         float paddingTop = gridHeight * 0.025f;
@@ -115,62 +99,39 @@ public class ChessBoardView extends View {
         float cellWidth = (gridWidth - paddingLeft - paddingRight) / 8.0f;
         float cellHeight = (gridHeight - paddingTop - paddingBottom) / 9.0f;
 
-
         if (pieces != null) {
             for (Piece p : pieces) {
                 if (p == selectedPiece) continue;
 
-                Bitmap pBitmap = getBitmap(p.resID);
+                Bitmap pBitmap = p.isFaceDown ? getBitmap(R.drawable.ic_face_down) : getBitmap(p.resID);
+
                 float centerX = dstBoard.left + paddingLeft + (p.x * cellWidth);
                 float centerY = dstBoard.top + paddingTop + (p.y * cellHeight);
                 float pieceSize = cellWidth * 1.0f;
 
-                RectF dstPiece = new RectF(
-                        centerX - pieceSize / 2,
-                        centerY - pieceSize / 2,
-                        centerX + pieceSize / 2,
-                        centerY + pieceSize / 2
-                );
+                RectF dstPiece = new RectF(centerX - pieceSize / 2, centerY - pieceSize / 2, centerX + pieceSize / 2, centerY + pieceSize / 2);
                 canvas.drawBitmap(pBitmap, null, dstPiece, null);
             }
 
-              // Ve quan duoc chon
             if (selectedPiece != null) {
-                Bitmap pBitmap = getBitmap(selectedPiece.resID);
-
+                Bitmap pBitmap = selectedPiece.isFaceDown ? getBitmap(R.drawable.ic_face_down) : getBitmap(selectedPiece.resID);
                 float trueX = dstBoard.left + paddingLeft + (selectedPiece.x * cellWidth);
                 float trueY = dstBoard.top + paddingTop + (selectedPiece.y * cellHeight);
-
                 float liftOffset = 20f;
                 float scaleUp = 1.15f;
                 float pieceSize = cellWidth * scaleUp;
 
-                // Bóng râm
-                RectF shadowRect = new RectF(
-                        trueX - (cellWidth * 0.7f) / 2,
-                        trueY - (cellWidth * 0.3f) / 2 + 10f,
-                        trueX + (cellWidth * 0.7f) / 2,
-                        trueY + (cellWidth * 0.3f) / 2 + 10f
-                );
+                RectF shadowRect = new RectF(trueX - (cellWidth * 0.7f) / 2, trueY - (cellWidth * 0.3f) / 2 + 10f, trueX + (cellWidth * 0.7f) / 2, trueY + (cellWidth * 0.3f) / 2 + 10f);
                 canvas.drawOval(shadowRect, shadowPaint);
 
-
-                RectF dstPiece = new RectF(
-                        trueX - pieceSize / 2,
-                        (trueY - liftOffset) - pieceSize / 2,
-                        trueX + pieceSize / 2,
-                        (trueY - liftOffset) + pieceSize / 2
-                );
+                RectF dstPiece = new RectF(trueX - pieceSize / 2, (trueY - liftOffset) - pieceSize / 2, trueX + pieceSize / 2, (trueY - liftOffset) + pieceSize / 2);
                 canvas.drawBitmap(pBitmap, null, dstPiece, null);
             }
         }
     }
 
-
-    // Cac ham tuong tac voi nguoi dung
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         if (isGameOver) return true;
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -182,9 +143,9 @@ public class ChessBoardView extends View {
 
             float paddingLeft = gridWidth * 0.025f;
             float paddingTop = gridHeight * 0.025f;
-
             float cellWidth = (gridWidth - paddingLeft * 2) / 8.0f;
             float cellHeight = (gridHeight - paddingTop * 2) / 9.0f;
+
             int gridX = Math.round((touchX - boardMargin - paddingLeft) / cellWidth);
             int gridY = Math.round((touchY - boardMargin - paddingTop) / cellHeight);
 
@@ -193,9 +154,9 @@ public class ChessBoardView extends View {
 
                 if (selectedPiece == null) {
                     if (clickedPiece != null) {
-
-                        boolean isClickingRed = (clickedPiece.color == Piece.Color.Red);
-                        if (isClickingRed == isRedTurn) {
+                        // Luật đã tinh giản: Đúng màu quân của phe mình là múc (bất kể đang úp hay ngửa)
+                        if ((isRedTurn && clickedPiece.color == Piece.Color.Red) ||
+                                (!isRedTurn && clickedPiece.color == Piece.Color.Black)) {
                             selectedPiece = clickedPiece;
                         }
                     }
@@ -204,21 +165,31 @@ public class ChessBoardView extends View {
                         if (clickedPiece == selectedPiece) {
                             selectedPiece = null;
                         } else if (clickedPiece.color == selectedPiece.color) {
+                            // Đổi ý, chọn quân khác cùng phe
                             selectedPiece = clickedPiece;
                         } else {
                             if (isSafeMove(selectedPiece, gridX, gridY, clickedPiece)) {
                                 pieces.remove(clickedPiece);
                                 selectedPiece.x = gridX;
                                 selectedPiece.y = gridY;
+                                soundPool.play(soundEat, 1, 1, 0, 0, 1);
+
+                                // Đi xong là lật bài!
+                                if (selectedPiece.isFaceDown) selectedPiece.isFaceDown = false;
+
                                 selectedPiece = null;
                                 processTurnEnd();
                             }
                         }
                     } else {
-                        // ĐI RA Ô TRỐNG
                         if (isSafeMove(selectedPiece, gridX, gridY, null)) {
                             selectedPiece.x = gridX;
                             selectedPiece.y = gridY;
+                            soundPool.play(soundMove, 1, 1, 0, 0, 1);
+
+                            // Đi xong lật bài!
+                            if (selectedPiece.isFaceDown) selectedPiece.isFaceDown = false;
+
                             selectedPiece = null;
                             processTurnEnd();
                         }
@@ -232,37 +203,25 @@ public class ChessBoardView extends View {
         return true;
     }
 
+    private void processTurnEnd() {
+        moveCount++;
+        isRedTurn = !isRedTurn;
+        Piece.Color nextColor = isRedTurn ? Piece.Color.Red : Piece.Color.Black;
 
+        if (isInCheck(nextColor)) soundPool.play(soundCheck, 1, 1, 0, 0, 1);
 
+        if (isCheckmate(nextColor)) {
+            isGameOver = true;
+            String winner = isRedTurn ? "ĐEN THẮNG!" : "ĐỎ THẮNG!";
+            if(gameListener != null) {
+                gameListener.onCheckmate(winner + " (Số nước đi: " + (moveCount / 2) + ")");
+            }
+        }
+    }
 
-
-    // Ham xu ly khi ket thuc 1 nuoc di
-     private void processTurnEnd() {
-         moveCount++;
-         isRedTurn = !isRedTurn;
-         Piece.Color nextColor = isRedTurn ? Piece.Color.Red : Piece.Color.Black;
-
-         // Kiem tra chieu tuong
-         if (isInCheck(nextColor)) {
-             soundPool.play(soundCheck, 1, 1, 0, 0, 1);
-         }
-
-         // Kiem tra chieu cuc
-         if (isCheckmate(nextColor)) {
-             isGameOver = true;
-             String winner = isRedTurn ? "ĐEN THẮNG!" : "ĐỎ THẮNG!";
-             if(gameListener != null) {
-                 gameListener.onCheckmate(winner + " (Số nước đi: " + (moveCount / 2) + ")");
-             }
-         }
-     }
-
-
-     //  Luat choi
     private Piece getPieceAt(int x, int y) {
         for (Piece p : pieces) {
             if (p.x == x && p.y == y) return p;
-
         }
         return null;
     }
@@ -287,23 +246,19 @@ public class ChessBoardView extends View {
 
     private boolean isInCheck(Piece.Color myColor) {
         Piece myKing = null;
-
-
         for (Piece p : pieces) {
             if (p.type == Piece.Type.Tuong_Quan && p.color == myColor) {
                 myKing = p;
                 break;
             }
         }
-
         if (myKing == null) return false;
 
         for (Piece enemy : pieces) {
-            if (enemy.color != myColor) {
+
+            if (enemy.color != myColor && !enemy.isFaceDown) {
                 if (enemy.type == Piece.Type.Tuong_Quan) continue;
-                if (isValidMove(enemy, myKing.x, myKing.y)) {
-                    return true;
-                }
+                if (isValidMove(enemy, myKing.x, myKing.y)) return true;
             }
         }
         return false;
@@ -311,8 +266,6 @@ public class ChessBoardView extends View {
 
     private boolean isSafeMove(Piece p, int targetX, int targetY, Piece targetPiece) {
         if (!isValidMove(p, targetX, targetY)) return false;
-
-
         int oldX = p.x;
         int oldY = p.y;
         boolean isPieceEaten = false;
@@ -324,21 +277,16 @@ public class ChessBoardView extends View {
             isPieceEaten = true;
         }
 
-
         boolean facing = isGeneralsFacing();
-        boolean inCheck = isInCheck(p.color);
-
+        boolean inCheck = isInCheck(isRedTurn ? Piece.Color.Red : Piece.Color.Black);
 
         p.x = oldX;
         p.y = oldY;
-        if (isPieceEaten) {
-            pieces.add(targetPiece);
-        }
+        if (isPieceEaten) pieces.add(targetPiece);
 
         return !facing && !inCheck;
     }
 
-   //  Kiem tra lo mat tuong
     private boolean isGeneralsFacing() {
         Piece redGeneral = null;
         Piece blackGeneral = null;
@@ -349,15 +297,27 @@ public class ChessBoardView extends View {
                 else blackGeneral = p;
             }
         }
-
         if (redGeneral == null || blackGeneral == null) return false;
         if (redGeneral.x != blackGeneral.x) return false;
-
-        int blocks = countPiecesBetween(redGeneral.x, redGeneral.y, blackGeneral.x, blackGeneral.y);
-        return blocks == 0;
+        return countPiecesBetween(redGeneral.x, redGeneral.y, blackGeneral.x, blackGeneral.y) == 0;
     }
 
-   // Luat di chuyen cua cac quan co
+    private Piece.Type getRoleOfSquare(int x, int y) {
+        if (y == 0 || y == 9) {
+            if (x == 0 || x == 8) return Piece.Type.Xe;
+            if (x == 1 || x == 7) return Piece.Type.Ma;
+            if (x == 2 || x == 6) return Piece.Type.Tuong;
+            if (x == 3 || x == 5) return Piece.Type.Si;
+        }
+        if (y == 2 || y == 7) {
+            if (x == 1 || x == 7) return Piece.Type.Phao;
+        }
+        if (y == 3 || y == 6) {
+            if (x == 0 || x == 2 || x == 4 || x == 6 || x == 8) return Piece.Type.Tot;
+        }
+        return null;
+    }
+
     private boolean isValidMove(Piece p, int targetX, int targetY) {
         if (p == null || p.type == null) return true;
         if (p.x == targetX && p.y == targetY) return false;
@@ -366,7 +326,16 @@ public class ChessBoardView extends View {
         int dy = Math.abs(targetY - p.y);
         Piece targetPiece = getPieceAt(targetX, targetY);
 
-        switch (p.type) {
+        Piece.Type ruleToApply = p.type;
+        Piece.Color ruleColor = p.color;
+
+
+        if (p.isFaceDown) {
+            ruleToApply = getRoleOfSquare(p.x, p.y);
+            if (ruleToApply == null) return false;
+        }
+
+        switch (ruleToApply) {
             case Xe:
                 if (dx == 0 || dy == 0) return countPiecesBetween(p.x, p.y, targetX, targetY) == 0;
                 return false;
@@ -388,7 +357,7 @@ public class ChessBoardView extends View {
                 return false;
 
             case Tot:
-                if (p.color == Piece.Color.Black) {
+                if (ruleColor == Piece.Color.Black) {
                     if (p.y <= 4) return dx == 0 && targetY == p.y + 1;
                     else return (dx == 1 && targetY == p.y) || (dx == 0 && targetY == p.y + 1);
                 } else {
@@ -398,8 +367,8 @@ public class ChessBoardView extends View {
 
             case Tuong:
                 if (dx == 2 && dy == 2) {
-                    if (p.color == Piece.Color.Black && targetY > 4) return false;
-                    if (p.color == Piece.Color.Red && targetY < 5) return false;
+                    if (ruleColor == Piece.Color.Black && targetY > 4) return false;
+                    if (ruleColor == Piece.Color.Red && targetY < 5) return false;
                     if (getPieceAt((p.x + targetX) / 2, (p.y + targetY) / 2) != null) return false;
                     return true;
                 }
@@ -408,8 +377,8 @@ public class ChessBoardView extends View {
             case Si:
                 if (dx == 1 && dy == 1) {
                     if (targetX < 3 || targetX > 5) return false;
-                    if (p.color == Piece.Color.Black && targetY > 2) return false;
-                    if (p.color == Piece.Color.Red && targetY < 7) return false;
+                    if (ruleColor == Piece.Color.Black && targetY > 2) return false;
+                    if (ruleColor == Piece.Color.Red && targetY < 7) return false;
                     return true;
                 }
                 return false;
@@ -417,8 +386,8 @@ public class ChessBoardView extends View {
             case Tuong_Quan:
                 if (dx + dy == 1) {
                     if (targetX < 3 || targetX > 5) return false;
-                    if (p.color == Piece.Color.Black && targetY > 2) return false;
-                    if (p.color == Piece.Color.Red && targetY < 7) return false;
+                    if (ruleColor == Piece.Color.Black && targetY > 2) return false;
+                    if (ruleColor == Piece.Color.Red && targetY < 7) return false;
                     return true;
                 }
                 return false;
@@ -426,7 +395,6 @@ public class ChessBoardView extends View {
         return true;
     }
 
-    // Ham kiem tra xem co bi chieu cuc k
     private boolean isCheckmate(Piece.Color myColor) {
         List<Piece> myPieces = new ArrayList<>();
         for (Piece p : pieces) {
@@ -439,13 +407,8 @@ public class ChessBoardView extends View {
             for (int targetX = 0; targetX <= 8; targetX++) {
                 for (int targetY = 0; targetY <= 9; targetY++) {
                     Piece targetPiece = getPieceAt(targetX, targetY);
-
                     if (targetPiece != null && targetPiece.color == myColor) continue;
-
-
-                    if (isSafeMove(p, targetX, targetY, targetPiece)) {
-                        return false;
-                    }
+                    if (isSafeMove(p, targetX, targetY, targetPiece)) return false;
                 }
             }
         }

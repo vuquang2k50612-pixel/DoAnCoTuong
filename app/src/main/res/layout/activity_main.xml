@@ -4,40 +4,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#C8C8C8"> <com.example.doancotuong.ChessBoardView
-    android:id="@+id/chessBoardView"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
-    android:layout_margin="10dp"
-    app:layout_constraintDimensionRatio="3:4"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent" />
+    android:background="#C8C8C8">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layoutStartScreen"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#99000000"
-        android:elevation="5dp"
-        android:visibility="visible">
-
-        <Button
-            android:id="@+id/btnStartGame"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BẮT ĐẦU "
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:padding="16dp"
-            android:backgroundTint="#00897B"
-            android:textColor="#F5DEB3"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <com.example.doancotuong.ChessBoardView
+        android:id="@+id/chessBoardView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="10dp"
+        app:layout_constraintDimensionRatio="3:4"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/btnHistory"
