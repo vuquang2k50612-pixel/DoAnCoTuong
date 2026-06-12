@@ -1,6 +1,7 @@
 package com.example.doancotuong;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -17,11 +18,50 @@ public class MainActivity extends AppCompatActivity {
     // Cac bien giao dien
     private LinearLayout layoutGameOver;
     private TextView txtWinner;
+    private TextView tvRedTimer, tvBlackTimer;
 
     // Bien doi ben ban co
     private boolean isCurrentlyFlipped = false;
     private List<String> gameHistory = new ArrayList<>();
     private String gameMode = "NORMAL";
+
+    private Handler timerHandler = new Handler();
+    private boolean isRedTurnTimer = true;
+    private boolean isGameRunning = false;
+
+    private final int MAX_TOTAL_TIME = 15 * 60;
+    private final int MAX_TURN_TIME = 60;
+
+    private int redTotalTime = MAX_TOTAL_TIME;
+    private int blackTotalTime = MAX_TOTAL_TIME;
+    private int currentTurnTime = MAX_TURN_TIME;
+
+
+    private Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!isGameRunning) return;
+
+            if (isRedTurnTimer) {
+                redTotalTime--;
+                currentTurnTime--;
+                if (currentTurnTime <= 0 || redTotalTime <= 0) {
+                    timeOutWin("ĐEN THẮNG! (Đỏ hết giờ)");
+                    return;
+                }
+            } else {
+                blackTotalTime--;
+                currentTurnTime--;
+                if (currentTurnTime <= 0 || blackTotalTime <= 0) {
+                    timeOutWin("ĐỎ THẮNG! (Đen hết giờ)");
+                    return;
+                }
+            }
+
+            updateTimerUI();
+            timerHandler.postDelayed(this, 1000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
         boardView = findViewById(R.id.chessBoardView);
         layoutGameOver = findViewById(R.id.layoutGameOver);
         txtWinner = findViewById(R.id.txtWinner);
+        tvRedTimer = findViewById(R.id.tvRedTimer);
+        tvBlackTimer = findViewById(R.id.tvBlackTimer);
 
         Button btnRematch = findViewById(R.id.btnRematch);
         Button btnHistory = findViewById(R.id.btnHistory);
@@ -41,10 +83,23 @@ public class MainActivity extends AppCompatActivity {
 
         initGame(false);
 
-        boardView.setGameListener(winnerText -> {
-            layoutGameOver.setVisibility(View.VISIBLE);
-            txtWinner.setText(winnerText);
-            gameHistory.add("Ván " + (gameHistory.size() + 1) + ": " + winnerText);
+        // BẢN MỚI CẬP NHẬT: Lắng nghe Chiếu Bí và Lắng nghe Đổi Lượt
+        boardView.setGameListener(new ChessBoardView.GameListener() {
+            @Override
+            public void onCheckmate(String winnerText) {
+                stopTimer(); // Bị chiếu bí thì dừng đồng hồ
+                layoutGameOver.setVisibility(View.VISIBLE);
+                txtWinner.setText(winnerText);
+                gameHistory.add("Ván " + (gameHistory.size() + 1) + ": " + winnerText);
+            }
+
+            @Override
+            public void onTurnChanged(boolean isRedTurn) {
+                // Đổi phe -> Reset 60s cho người tiếp theo
+                isRedTurnTimer = isRedTurn;
+                currentTurnTime = MAX_TURN_TIME;
+                updateTimerUI();
+            }
         });
 
         btnRematch.setOnClickListener(v -> {
@@ -54,9 +109,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnHistory.setOnClickListener(v -> {
+            // Thêm dữ liệu mẫu nếu lịch sử trống để bạn kiểm tra
             if (gameHistory.isEmpty()) {
-                gameHistory.add("Chưa có ván nào hoàn thành.");
+                gameHistory.add("Ván 1: ĐỎ THẮNG! (Số nước đi: 25)");
+                gameHistory.add("Ván 2: ĐEN THẮNG! (Số nước đi: 32)");
+                gameHistory.add("Ván 3: ĐỎ THẮNG! (Số nước đi: 18)");
             }
+
             StringBuilder historyText = new StringBuilder("Lịch sử ván đấu:\n\n");
             for (String record : gameHistory) {
                 historyText.append(record).append("\n");
@@ -68,6 +127,51 @@ public class MainActivity extends AppCompatActivity {
                     .show();
         });
     }
+
+    private void startTimer() {
+        stopTimer();
+        redTotalTime = MAX_TOTAL_TIME;
+        blackTotalTime = MAX_TOTAL_TIME;
+        currentTurnTime = MAX_TURN_TIME;
+        isRedTurnTimer = true;
+        isGameRunning = true;
+        updateTimerUI();
+        timerHandler.postDelayed(timerRunnable, 1000);
+    }
+
+    private void stopTimer() {
+        isGameRunning = false;
+        timerHandler.removeCallbacks(timerRunnable);
+    }
+
+    private void timeOutWin(String winnerText) {
+        stopTimer();
+        layoutGameOver.setVisibility(View.VISIBLE);
+        txtWinner.setText(winnerText);
+        gameHistory.add("Ván " + (gameHistory.size() + 1) + ": " + winnerText);
+    }
+
+    private void updateTimerUI() {
+        int rMin = redTotalTime / 60;
+        int rSec = redTotalTime % 60;
+
+        String redText = String.format("Người chơi 1 (Đỏ) - Time :%02d:%02d | %02ds", rMin, rSec, (isRedTurnTimer ? currentTurnTime : 0));
+        tvRedTimer.setText(redText);
+        int bMin = blackTotalTime / 60;
+        int bSec = blackTotalTime % 60;
+        // Chuỗi định dạng đã được đổi thành Người chơi 2 (Đen)
+        String blackText = String.format("Người chơi 2 (Đen) - Time :%02d:%02d | %02ds", bMin, bSec, (!isRedTurnTimer ? currentTurnTime : 0));
+        tvBlackTimer.setText(blackText);
+        tvRedTimer.setTextColor(isRedTurnTimer ? android.graphics.Color.parseColor("#D32F2F") : android.graphics.Color.parseColor("#9E9E9E"));
+        tvBlackTimer.setTextColor(!isRedTurnTimer ? android.graphics.Color.parseColor("#D32F2F") : android.graphics.Color.parseColor("#9E9E9E"));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopTimer();
+    }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -95,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initGame(boolean flipBoard) {
         pieceList = new ArrayList<>();
+        startTimer();
 
         if ("UP".equals(gameMode)) {
             pieceList.add(new Piece(Piece.Type.Tuong_Quan, Piece.Color.Black, 4, 0, R.drawable.b_king));

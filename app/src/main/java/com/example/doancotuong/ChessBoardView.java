@@ -35,6 +35,8 @@ public class ChessBoardView extends View {
 
     public interface GameListener {
         void onCheckmate(String winnerText);
+
+        void onTurnChanged(boolean isRedTurn);
     }
     private GameListener gameListener;
     public void setGameListener(GameListener listener) {
@@ -136,8 +138,6 @@ public class ChessBoardView extends View {
 
             if (selectedPiece != null) {
                 Bitmap pBitmap = selectedPiece.isFaceDown ? getBitmap(R.drawable.ic_face_down) : getBitmap(selectedPiece.resID);
-
-                // VẼ ĐẢO NGƯỢC QUÂN CỜ ĐANG CẦM TRÊN TAY
                 int drawX = isFlipped ? (8 - selectedPiece.x) : selectedPiece.x;
                 int drawY = isFlipped ? (9 - selectedPiece.y) : selectedPiece.y;
 
@@ -243,6 +243,9 @@ public class ChessBoardView extends View {
             if(gameListener != null) {
                 gameListener.onCheckmate(winner + " (Số nước đi: " + (moveCount / 2) + ")");
             }
+        }
+        if (gameListener != null && !isGameOver) {
+            gameListener.onTurnChanged(isRedTurn);
         }
     }
 
