@@ -15,16 +15,16 @@ public class MainActivity extends AppCompatActivity {
     private ChessBoardView boardView;
     private List<Piece> pieceList = new ArrayList<>();
 
-    // Cac bien giao dien
+    // Các biến giao diện
     private LinearLayout layoutGameOver;
     private TextView txtWinner;
     private TextView tvRedTimer, tvBlackTimer;
 
-    // Bien doi ben ban co
+    // Biến đổi bên bàn cờ
     private boolean isCurrentlyFlipped = false;
-    private List<String> gameHistory = new ArrayList<>();
     private String gameMode = "NORMAL";
 
+    // Bien quan ly time
     private Handler timerHandler = new Handler();
     private boolean isRedTurnTimer = true;
     private boolean isGameRunning = false;
@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private int redTotalTime = MAX_TOTAL_TIME;
     private int blackTotalTime = MAX_TOTAL_TIME;
     private int currentTurnTime = MAX_TURN_TIME;
-
 
     private Runnable timerRunnable = new Runnable() {
         @Override
@@ -71,8 +70,8 @@ public class MainActivity extends AppCompatActivity {
         boardView = findViewById(R.id.chessBoardView);
         layoutGameOver = findViewById(R.id.layoutGameOver);
         txtWinner = findViewById(R.id.txtWinner);
-        tvRedTimer = findViewById(R.id.tvRedTimer);
         tvBlackTimer = findViewById(R.id.tvBlackTimer);
+        tvRedTimer = findViewById(R.id.tvRedTimer);
 
         Button btnRematch = findViewById(R.id.btnRematch);
         Button btnHistory = findViewById(R.id.btnHistory);
@@ -83,19 +82,16 @@ public class MainActivity extends AppCompatActivity {
 
         initGame(false);
 
-        // BẢN MỚI CẬP NHẬT: Lắng nghe Chiếu Bí và Lắng nghe Đổi Lượt
         boardView.setGameListener(new ChessBoardView.GameListener() {
             @Override
             public void onCheckmate(String winnerText) {
-                stopTimer(); // Bị chiếu bí thì dừng đồng hồ
+                stopTimer();
                 layoutGameOver.setVisibility(View.VISIBLE);
                 txtWinner.setText(winnerText);
-                gameHistory.add("Ván " + (gameHistory.size() + 1) + ": " + winnerText);
             }
 
             @Override
             public void onTurnChanged(boolean isRedTurn) {
-                // Đổi phe -> Reset 60s cho người tiếp theo
                 isRedTurnTimer = isRedTurn;
                 currentTurnTime = MAX_TURN_TIME;
                 updateTimerUI();
@@ -109,73 +105,72 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnHistory.setOnClickListener(v -> {
-            // Thêm dữ liệu mẫu nếu lịch sử trống để bạn kiểm tra
-            if (gameHistory.isEmpty()) {
-                gameHistory.add("Ván 1: ĐỎ THẮNG! (Số nước đi: 25)");
-                gameHistory.add("Ván 2: ĐEN THẮNG! (Số nước đi: 32)");
-                gameHistory.add("Ván 3: ĐỎ THẮNG! (Số nước đi: 18)");
-            }
-
-            StringBuilder historyText = new StringBuilder("Lịch sử ván đấu:\n\n");
-            for (String record : gameHistory) {
-                historyText.append(record).append("\n");
-            }
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Lịch sử")
-                    .setMessage(historyText.toString())
-                    .setPositiveButton("Đóng", null)
-                    .show();
+           // todo
         });
+
 
         Button btnSurrenderTop = findViewById(R.id.btnSurrenderTop);
         Button btnDrawTop = findViewById(R.id.btnDrawTop);
         Button btnSurrenderBottom = findViewById(R.id.btnSurrenderBottom);
         Button btnDrawBottom = findViewById(R.id.btnDrawBottom);
 
-
         btnSurrenderBottom.setOnClickListener(v -> {
             if (!isGameRunning) return;
+            boolean isRedPlayer = !isCurrentlyFlipped;
+            String myColor = isRedPlayer ? "Đỏ" : "Đen";
+            String enemyColor = isRedPlayer ? "ĐEN" : "ĐỎ";
+
             new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Đỏ Đầu Hàng?")
+                    .setTitle("Người chơi 1 (" + myColor + ") Đầu Hàng?")
                     .setMessage("Bạn chắc chắn xin thua không?")
-                    .setPositiveButton("Chấp nhận thua", (dialog, which) -> timeOutWin("ĐEN THẮNG! (Đỏ xin hàng)"))
-                    .setNegativeButton("Đánh tiếp", null)
-                    .show();
+                    .setPositiveButton("Chấp nhận thua", (dialog, which) -> timeOutWin(enemyColor + " THẮNG! (Người chơi 1 xin hàng)"))
+                    .setNegativeButton("Đánh tiếp", null).show();
         });
 
         btnDrawBottom.setOnClickListener(v -> {
             if (!isGameRunning) return;
+            boolean isRedPlayer = !isCurrentlyFlipped;
+            String myColor = isRedPlayer ? "Đỏ" : "Đen";
+            String enemyColor = isRedPlayer ? "Đen" : "Đỏ";
+
             new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Đỏ Xin Hòa")
-                    .setMessage("Người chơi 1 (Đỏ) muốn hòa. Đen có đồng ý không?")
-                    .setPositiveButton("Đồng ý hòa", (dialog, which) -> timeOutWin("HÒA NHAU!"))
-                    .setNegativeButton("Không đồng ý", (dialog, which) ->
-                            android.widget.Toast.makeText(this, "Đen từ chối! Đánh tiếp!", android.widget.Toast.LENGTH_SHORT).show()
+                    .setTitle("Người chơi 1 (" + myColor + ") Xin Hòa")
+                    .setMessage("Người chơi 1 (" + myColor + ") muốn hòa. Người chơi 2 (" + enemyColor + ") có đồng ý không?")
+                    .setPositiveButton("Đồng ý hòa", (dialog, which) -> timeOutWin("HÒA"))
+                    .setNegativeButton("Đánh tiếp", (dialog, which) ->
+                            android.widget.Toast.makeText(this, "Người chơi 2 từ chối! Đánh tiếp!", android.widget.Toast.LENGTH_SHORT).show()
                     ).setCancelable(false).show();
         });
 
+
         btnSurrenderTop.setOnClickListener(v -> {
             if (!isGameRunning) return;
+            boolean isRedPlayer = isCurrentlyFlipped;
+            String myColor = isRedPlayer ? "Đỏ" : "Đen";
+            String enemyColor = isRedPlayer ? "ĐEN" : "ĐỎ";
+
             new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Đen Đầu Hàng?")
+                    .setTitle("Người chơi 2 (" + myColor + ") Đầu Hàng?")
                     .setMessage("Bạn chắc chắn xin thua không?")
-                    .setPositiveButton("Chấp nhận thua", (dialog, which) -> timeOutWin("ĐỎ THẮNG! (Đen xin hàng)"))
-                    .setNegativeButton("Đánh tiếp", null)
-                    .show();
+                    .setPositiveButton("Chấp nhận thua", (dialog, which) -> timeOutWin(enemyColor + " THẮNG! (Người chơi 2 xin hàng)"))
+                    .setNegativeButton("Đánh tiếp", null).show();
         });
 
         btnDrawTop.setOnClickListener(v -> {
             if (!isGameRunning) return;
+            boolean isRedPlayer = isCurrentlyFlipped;
+            String myColor = isRedPlayer ? "Đỏ" : "Đen";
+            String enemyColor = isRedPlayer ? "Đen" : "Đỏ";
+
             new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Đen Xin Hòa")
-                    .setMessage("Người chơi 2 (Đen) muốn hòa. Đỏ có đồng ý không?")
-                    .setPositiveButton("Đồng ý hòa", (dialog, which) -> timeOutWin("HÒA NHAU!"))
+                    .setTitle("Người chơi 2 (" + myColor + ") Xin Hòa")
+                    .setMessage("Người chơi 2 (" + myColor + ") muốn hòa. Người chơi 1 (" + enemyColor + ") có đồng ý không?")
+                    .setPositiveButton("Đồng ý hòa", (dialog, which) -> timeOutWin("HÒA"))
                     .setNegativeButton("Đánh tiếp", (dialog, which) ->
-                            android.widget.Toast.makeText(this, "Đỏ từ chối! Đánh tiếp!", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(this, "Người chơi 1 từ chối! Đánh tiếp!", android.widget.Toast.LENGTH_SHORT).show()
                     ).setCancelable(false).show();
         });
     }
-
 
     private void startTimer() {
         stopTimer();
@@ -197,22 +192,33 @@ public class MainActivity extends AppCompatActivity {
         stopTimer();
         layoutGameOver.setVisibility(View.VISIBLE);
         txtWinner.setText(winnerText);
-        gameHistory.add("Ván " + (gameHistory.size() + 1) + ": " + winnerText);
     }
 
     private void updateTimerUI() {
+        // Text gốc của Đỏ và Đen
         int rMin = redTotalTime / 60;
         int rSec = redTotalTime % 60;
+        String redStr = String.format("Người chơi 1- %02d:%02d | %02ds", rMin, rSec, (isRedTurnTimer ? currentTurnTime : 0));
 
-        String redText = String.format("Người chơi 1 (Đỏ) - Time :%02d:%02d | %02ds", rMin, rSec, (isRedTurnTimer ? currentTurnTime : 0));
-        tvRedTimer.setText(redText);
         int bMin = blackTotalTime / 60;
         int bSec = blackTotalTime % 60;
-        // Chuỗi định dạng đã được đổi thành Người chơi 2 (Đen)
-        String blackText = String.format("Người chơi 2 (Đen) - Time :%02d:%02d | %02ds", bMin, bSec, (!isRedTurnTimer ? currentTurnTime : 0));
-        tvBlackTimer.setText(blackText);
-        tvRedTimer.setTextColor(isRedTurnTimer ? android.graphics.Color.parseColor("#D32F2F") : android.graphics.Color.parseColor("#9E9E9E"));
-        tvBlackTimer.setTextColor(!isRedTurnTimer ? android.graphics.Color.parseColor("#D32F2F") : android.graphics.Color.parseColor("#9E9E9E"));
+        String blackStr = String.format("Người chơi 2 (Đen) - %02d:%02d | %02ds", bMin, bSec, (!isRedTurnTimer ? currentTurnTime : 0));
+
+        int activeColor = android.graphics.Color.parseColor("#D32F2F"); // Đỏ thẫm
+        int inactiveColor = android.graphics.Color.parseColor("#9E9E9E"); // Xám xịt
+
+       // Đảo vị trí
+        if (!isCurrentlyFlipped) {
+            tvRedTimer.setText(redStr);
+            tvBlackTimer.setText(blackStr);
+            tvRedTimer.setTextColor(isRedTurnTimer ? activeColor : inactiveColor);
+            tvBlackTimer.setTextColor(!isRedTurnTimer ? activeColor : inactiveColor);
+        } else {
+            tvRedTimer.setText(blackStr);
+            tvBlackTimer.setText(redStr);
+            tvRedTimer.setTextColor(!isRedTurnTimer ? activeColor : inactiveColor);
+            tvBlackTimer.setTextColor(isRedTurnTimer ? activeColor : inactiveColor);
+        }
     }
 
     @Override
@@ -221,12 +227,10 @@ public class MainActivity extends AppCompatActivity {
         stopTimer();
     }
 
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean("isCurrentlyFlipped", isCurrentlyFlipped);
-        outState.putStringArrayList("gameHistory", new ArrayList<>(gameHistory));
         outState.putSerializable("pieceList", new ArrayList<>(pieceList));
     }
 
@@ -234,10 +238,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         isCurrentlyFlipped = savedInstanceState.getBoolean("isCurrentlyFlipped", false);
-        gameHistory = savedInstanceState.getStringArrayList("gameHistory");
-        if (gameHistory == null) {
-            gameHistory = new ArrayList<>();
-        }
 
         List<Piece> savedPieces = (List<Piece>) savedInstanceState.getSerializable("pieceList");
         if (savedPieces != null) {
