@@ -107,7 +107,7 @@ public class ChessBoardView extends View {
             canvas.rotate(180, dstBoard.centerX(), dstBoard.centerY());
         }
         canvas.drawBitmap(boardImg, null, dstBoard, null);
-        canvas.restore(); // Vẽ xong bàn thì trả về bình thường để vẽ quân cờ
+        canvas.restore();
 
         float gridWidth = dstBoard.width();
         float gridHeight = dstBoard.height();
@@ -201,7 +201,7 @@ public class ChessBoardView extends View {
                                 pieces.remove(clickedPiece);
                                 selectedPiece.x = gridX;
                                 selectedPiece.y = gridY;
-                                soundPool.play(soundEat, 1, 1, 0, 0, 1);
+                                soundPool.play(soundEat, 0.2f, 0.2f, 0, 0, 1);
 
                                 if (selectedPiece.isFaceDown) selectedPiece.isFaceDown = false;
 

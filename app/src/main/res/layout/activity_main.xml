@@ -4,50 +4,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#D7CCC8"> <LinearLayout
-    android:id="@+id/playerTop"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginTop="48dp"
-    android:background="#E6FFFFFF"
-    android:padding="8dp"
-    android:elevation="4dp"
-    android:orientation="horizontal"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
-
-    <TextView
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="#5D4037"
-        android:gravity="center"
-        android:text="👤"
-        android:textSize="20sp" />
+    android:background="#D7CCC8">
 
     <LinearLayout
+        android:id="@+id/playerTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:orientation="vertical">
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="48dp"
+        android:background="#E6FFFFFF"
+        android:padding="8dp"
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Người chơi 2 (Đen)"  android:textColor="#000000"
-            android:textStyle="bold"
-            android:textSize="14sp"/>
+            android:layout_marginStart="8dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvBlackTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="⌛ 15:00 | ⏱ 60s"
-            android:textColor="#424242"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Người chơi 2 (Đen)"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/tvBlackTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15:00 |  60s"
+                android:textColor="#424242"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
 
     <Button
         android:id="@+id/btnHistory"
@@ -85,7 +80,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,7 +89,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Người chơi 1 (Đỏ)"  android:textColor="#000000"
+                android:text="Người chơi 1 (Đỏ)"
+                android:textColor="#000000"
                 android:textStyle="bold"
                 android:textSize="14sp"/>
 
@@ -108,6 +103,67 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutActionsTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:layout_marginStart="16dp"
+        android:orientation="vertical"
+        android:rotation="180"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/playerTop">
+
+        <Button
+            android:id="@+id/btnDrawTop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#2196F3"
+            android:text="CẦU HÒA"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnSurrenderTop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#D32F2F"
+            android:text="XIN THUA"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutActionsBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnDrawBottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#2196F3"
+            android:text="CẦU HÒA"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnSurrenderBottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#D32F2F"
+            android:text="XIN THUA"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <LinearLayout

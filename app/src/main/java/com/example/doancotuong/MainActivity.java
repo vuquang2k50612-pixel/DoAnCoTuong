@@ -126,7 +126,56 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton("Đóng", null)
                     .show();
         });
+
+        Button btnSurrenderTop = findViewById(R.id.btnSurrenderTop);
+        Button btnDrawTop = findViewById(R.id.btnDrawTop);
+        Button btnSurrenderBottom = findViewById(R.id.btnSurrenderBottom);
+        Button btnDrawBottom = findViewById(R.id.btnDrawBottom);
+
+
+        btnSurrenderBottom.setOnClickListener(v -> {
+            if (!isGameRunning) return;
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Đỏ Đầu Hàng?")
+                    .setMessage("Bạn chắc chắn xin thua không?")
+                    .setPositiveButton("Chấp nhận thua", (dialog, which) -> timeOutWin("ĐEN THẮNG! (Đỏ xin hàng)"))
+                    .setNegativeButton("Đánh tiếp", null)
+                    .show();
+        });
+
+        btnDrawBottom.setOnClickListener(v -> {
+            if (!isGameRunning) return;
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Đỏ Xin Hòa")
+                    .setMessage("Người chơi 1 (Đỏ) muốn hòa. Đen có đồng ý không?")
+                    .setPositiveButton("Đồng ý hòa", (dialog, which) -> timeOutWin("HÒA NHAU!"))
+                    .setNegativeButton("Không đồng ý", (dialog, which) ->
+                            android.widget.Toast.makeText(this, "Đen từ chối! Đánh tiếp!", android.widget.Toast.LENGTH_SHORT).show()
+                    ).setCancelable(false).show();
+        });
+
+        btnSurrenderTop.setOnClickListener(v -> {
+            if (!isGameRunning) return;
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Đen Đầu Hàng?")
+                    .setMessage("Bạn chắc chắn xin thua không?")
+                    .setPositiveButton("Chấp nhận thua", (dialog, which) -> timeOutWin("ĐỎ THẮNG! (Đen xin hàng)"))
+                    .setNegativeButton("Đánh tiếp", null)
+                    .show();
+        });
+
+        btnDrawTop.setOnClickListener(v -> {
+            if (!isGameRunning) return;
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Đen Xin Hòa")
+                    .setMessage("Người chơi 2 (Đen) muốn hòa. Đỏ có đồng ý không?")
+                    .setPositiveButton("Đồng ý hòa", (dialog, which) -> timeOutWin("HÒA NHAU!"))
+                    .setNegativeButton("Đánh tiếp", (dialog, which) ->
+                            android.widget.Toast.makeText(this, "Đỏ từ chối! Đánh tiếp!", android.widget.Toast.LENGTH_SHORT).show()
+                    ).setCancelable(false).show();
+        });
     }
+
 
     private void startTimer() {
         stopTimer();
