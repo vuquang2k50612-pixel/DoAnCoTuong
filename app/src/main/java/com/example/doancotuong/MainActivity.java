@@ -23,6 +23,9 @@ public class MainActivity extends AppCompatActivity {
     // Biến đổi bên bàn cờ
     private boolean isCurrentlyFlipped = false;
     private String gameMode = "NORMAL";
+    
+    // Game record manager
+    private GameRecordManager recordManager;
 
     // Bien quan ly time
     private Handler timerHandler = new Handler();
@@ -67,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        recordManager = new GameRecordManager(this);
+        
         boardView = findViewById(R.id.chessBoardView);
         layoutGameOver = findViewById(R.id.layoutGameOver);
         txtWinner = findViewById(R.id.txtWinner);
@@ -88,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 stopTimer();
                 layoutGameOver.setVisibility(View.VISIBLE);
                 txtWinner.setText(winnerText);
+                saveGameRecord(winnerText);
             }
 
             @Override
@@ -105,7 +111,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnHistory.setOnClickListener(v -> {
-           // todo
+            android.content.Intent intent = new android.content.Intent(MainActivity.this, HistoryActivity.class);
+            startActivity(intent);
         });
 
 
@@ -192,6 +199,30 @@ public class MainActivity extends AppCompatActivity {
         stopTimer();
         layoutGameOver.setVisibility(View.VISIBLE);
         txtWinner.setText(winnerText);
+        saveGameRecord(winnerText);
+    }
+    
+    private void saveGameRecord(String winnerText) {
+        try {
+            String winner;
+            String loser = null;
+            
+            if ("HÒA".equals(winnerText)) {
+                winner = "HÒA";
+            } else if (winnerText.contains("ĐỎ")) {
+                winner = "ĐỎ";
+                loser = "ĐEN";
+            } else {
+                winner = "ĐEN";
+                loser = "ĐỎ";
+            }
+            
+            int totalMoves = boardView.moveCount;
+            GameRecord record = new GameRecord(winner, loser, totalMoves, gameMode);
+            recordManager.saveGameRecord(record);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void updateTimerUI() {

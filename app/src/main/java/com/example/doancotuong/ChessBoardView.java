@@ -24,7 +24,7 @@ public class ChessBoardView extends View {
     private boolean isGameOver = false;
     private boolean isRedTurn = true;
     private boolean isFlipped = false;
-    private int moveCount = 0;
+    public int moveCount = 0;
 
     private boolean isCoUpMode = false;
 

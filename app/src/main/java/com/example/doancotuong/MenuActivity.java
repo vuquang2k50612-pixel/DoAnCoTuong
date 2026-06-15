@@ -19,6 +19,7 @@ public class MenuActivity extends AppCompatActivity {
 
         ImageView btnCoTuong = findViewById(R.id.btnCoTuong);
         ImageView btnCoUp = findViewById(R.id.btnCoUp);
+        android.widget.Button btnHistory = findViewById(R.id.btnHistory);
 
         btnCoTuong.setOnClickListener(v -> {
             Intent intent = new Intent(MenuActivity.this, MainActivity.class);
@@ -29,6 +30,11 @@ public class MenuActivity extends AppCompatActivity {
         btnCoUp.setOnClickListener(v -> {
             Intent intent = new Intent(MenuActivity.this, MainActivity.class);
             intent.putExtra("GAME_MODE", "UP");
+            startActivity(intent);
+        });
+
+        btnHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(MenuActivity.this, HistoryActivity.class);
             startActivity(intent);
         });
     }
