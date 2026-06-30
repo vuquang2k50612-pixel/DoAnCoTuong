@@ -27,16 +27,6 @@
                 android:textColor="#FFFFFF"
                 android:textSize="24sp"
                 android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btnBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="#D7CCC8"
-                android:text="QUAY LẠI"
-                android:textColor="#795548"
-                android:textStyle="bold"
-                android:textSize="14sp" />
         </LinearLayout>
     </LinearLayout>
 

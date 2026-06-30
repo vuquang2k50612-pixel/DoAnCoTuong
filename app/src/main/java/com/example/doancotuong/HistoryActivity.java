@@ -27,10 +27,8 @@ public class HistoryActivity extends AppCompatActivity {
         historyContainer = findViewById(R.id.historyContainer);
 
         Button btnClearHistory = findViewById(R.id.btnClearHistory);
-        Button btnBack = findViewById(R.id.btnBack);
 
         btnClearHistory.setOnClickListener(v -> showClearConfirmDialog());
-        btnBack.setOnClickListener(v -> finish());
 
         loadHistoryData();
     }
