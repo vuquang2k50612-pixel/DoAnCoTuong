@@ -1,14 +1,18 @@
 package com.example.doancotuong;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,11 +27,11 @@ public class MainActivity extends AppCompatActivity {
     // Biến đổi bên bàn cờ
     private boolean isCurrentlyFlipped = false;
     private String gameMode = "NORMAL";
-    
-    // Game record manager
+
+
     private GameRecordManager recordManager;
 
-    // Bien quan ly time
+    // Biến quản lý thời gian
     private Handler timerHandler = new Handler();
     private boolean isRedTurnTimer = true;
     private boolean isGameRunning = false;
@@ -38,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private int redTotalTime = MAX_TOTAL_TIME;
     private int blackTotalTime = MAX_TOTAL_TIME;
     private int currentTurnTime = MAX_TURN_TIME;
+
 
     private Runnable timerRunnable = new Runnable() {
         @Override
@@ -71,7 +76,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         recordManager = new GameRecordManager(this);
-        
+
+
         boardView = findViewById(R.id.chessBoardView);
         layoutGameOver = findViewById(R.id.layoutGameOver);
         txtWinner = findViewById(R.id.txtWinner);
@@ -79,13 +85,18 @@ public class MainActivity extends AppCompatActivity {
         tvRedTimer = findViewById(R.id.tvRedTimer);
 
         Button btnRematch = findViewById(R.id.btnRematch);
-        Button btnHistory = findViewById(R.id.btnHistory);
+        Button btnSurrenderTop = findViewById(R.id.btnSurrenderTop);
+        Button btnDrawTop = findViewById(R.id.btnDrawTop);
+        Button btnSurrenderBottom = findViewById(R.id.btnSurrenderBottom);
+        Button btnDrawBottom = findViewById(R.id.btnDrawBottom);
 
+        // Lấy chế độ chơi từ Intent
         if (getIntent().hasExtra("GAME_MODE")) {
             gameMode = getIntent().getStringExtra("GAME_MODE");
         }
 
         initGame(false);
+
 
         boardView.setGameListener(new ChessBoardView.GameListener() {
             @Override
@@ -104,22 +115,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         btnRematch.setOnClickListener(v -> {
             layoutGameOver.setVisibility(View.GONE);
             isCurrentlyFlipped = !isCurrentlyFlipped;
             initGame(isCurrentlyFlipped);
         });
 
-        btnHistory.setOnClickListener(v -> {
-            android.content.Intent intent = new android.content.Intent(MainActivity.this, HistoryActivity.class);
-            startActivity(intent);
-        });
-
-
-        Button btnSurrenderTop = findViewById(R.id.btnSurrenderTop);
-        Button btnDrawTop = findViewById(R.id.btnDrawTop);
-        Button btnSurrenderBottom = findViewById(R.id.btnSurrenderBottom);
-        Button btnDrawBottom = findViewById(R.id.btnDrawBottom);
 
         btnSurrenderBottom.setOnClickListener(v -> {
             if (!isGameRunning) return;
@@ -127,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             String myColor = isRedPlayer ? "Đỏ" : "Đen";
             String enemyColor = isRedPlayer ? "ĐEN" : "ĐỎ";
 
-            new androidx.appcompat.app.AlertDialog.Builder(this)
+            new AlertDialog.Builder(this)
                     .setTitle("Người chơi 1 (" + myColor + ") Đầu Hàng?")
                     .setMessage("Bạn chắc chắn xin thua không?")
                     .setPositiveButton("Chấp nhận thua", (dialog, which) -> timeOutWin(enemyColor + " THẮNG! (Người chơi 1 xin hàng)"))
@@ -140,15 +142,14 @@ public class MainActivity extends AppCompatActivity {
             String myColor = isRedPlayer ? "Đỏ" : "Đen";
             String enemyColor = isRedPlayer ? "Đen" : "Đỏ";
 
-            new androidx.appcompat.app.AlertDialog.Builder(this)
+            new AlertDialog.Builder(this)
                     .setTitle("Người chơi 1 (" + myColor + ") Xin Hòa")
                     .setMessage("Người chơi 1 (" + myColor + ") muốn hòa. Người chơi 2 (" + enemyColor + ") có đồng ý không?")
                     .setPositiveButton("Đồng ý hòa", (dialog, which) -> timeOutWin("HÒA"))
                     .setNegativeButton("Đánh tiếp", (dialog, which) ->
-                            android.widget.Toast.makeText(this, "Người chơi 2 từ chối! Đánh tiếp!", android.widget.Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Người chơi 2 từ chối! Đánh tiếp!", Toast.LENGTH_SHORT).show()
                     ).setCancelable(false).show();
         });
-
 
         btnSurrenderTop.setOnClickListener(v -> {
             if (!isGameRunning) return;
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
             String myColor = isRedPlayer ? "Đỏ" : "Đen";
             String enemyColor = isRedPlayer ? "ĐEN" : "ĐỎ";
 
-            new androidx.appcompat.app.AlertDialog.Builder(this)
+            new AlertDialog.Builder(this)
                     .setTitle("Người chơi 2 (" + myColor + ") Đầu Hàng?")
                     .setMessage("Bạn chắc chắn xin thua không?")
                     .setPositiveButton("Chấp nhận thua", (dialog, which) -> timeOutWin(enemyColor + " THẮNG! (Người chơi 2 xin hàng)"))
@@ -169,15 +170,17 @@ public class MainActivity extends AppCompatActivity {
             String myColor = isRedPlayer ? "Đỏ" : "Đen";
             String enemyColor = isRedPlayer ? "Đen" : "Đỏ";
 
-            new androidx.appcompat.app.AlertDialog.Builder(this)
+            new AlertDialog.Builder(this)
                     .setTitle("Người chơi 2 (" + myColor + ") Xin Hòa")
                     .setMessage("Người chơi 2 (" + myColor + ") muốn hòa. Người chơi 1 (" + enemyColor + ") có đồng ý không?")
                     .setPositiveButton("Đồng ý hòa", (dialog, which) -> timeOutWin("HÒA"))
                     .setNegativeButton("Đánh tiếp", (dialog, which) ->
-                            android.widget.Toast.makeText(this, "Người chơi 1 từ chối! Đánh tiếp!", android.widget.Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Người chơi 1 từ chối! Đánh tiếp!", Toast.LENGTH_SHORT).show()
                     ).setCancelable(false).show();
         });
     }
+
+
 
     private void startTimer() {
         stopTimer();
@@ -201,12 +204,12 @@ public class MainActivity extends AppCompatActivity {
         txtWinner.setText(winnerText);
         saveGameRecord(winnerText);
     }
-    
+
     private void saveGameRecord(String winnerText) {
         try {
             String winner;
             String loser = null;
-            
+
             if ("HÒA".equals(winnerText)) {
                 winner = "HÒA";
             } else if (winnerText.contains("ĐỎ")) {
@@ -216,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                 winner = "ĐEN";
                 loser = "ĐỎ";
             }
-            
+
             int totalMoves = boardView.moveCount;
             GameRecord record = new GameRecord(winner, loser, totalMoves, gameMode);
             recordManager.saveGameRecord(record);
@@ -226,19 +229,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateTimerUI() {
-        // Text gốc của Đỏ và Đen
         int rMin = redTotalTime / 60;
         int rSec = redTotalTime % 60;
-        String redStr = String.format("Người chơi 1- %02d:%02d | %02ds", rMin, rSec, (isRedTurnTimer ? currentTurnTime : 0));
+
+        String redStr = String.format("Người chơi 1 - %02d:%02d | %02ds", rMin, rSec, (isRedTurnTimer ? currentTurnTime : 0));
 
         int bMin = blackTotalTime / 60;
         int bSec = blackTotalTime % 60;
-        String blackStr = String.format("Người chơi 2 (Đen) - %02d:%02d | %02ds", bMin, bSec, (!isRedTurnTimer ? currentTurnTime : 0));
+        String blackStr = String.format("Người chơi 2 - %02d:%02d | %02ds", bMin, bSec, (!isRedTurnTimer ? currentTurnTime : 0));
 
-        int activeColor = android.graphics.Color.parseColor("#D32F2F"); // Đỏ thẫm
-        int inactiveColor = android.graphics.Color.parseColor("#9E9E9E"); // Xám xịt
+        int activeColor = Color.parseColor("#D32F2F");
+        int inactiveColor = Color.parseColor("#9E9E9E");
 
-       // Đảo vị trí
+
         if (!isCurrentlyFlipped) {
             tvRedTimer.setText(redStr);
             tvBlackTimer.setText(blackStr);
@@ -251,6 +254,8 @@ public class MainActivity extends AppCompatActivity {
             tvBlackTimer.setTextColor(isRedTurnTimer ? activeColor : inactiveColor);
         }
     }
+
+
 
     @Override
     protected void onDestroy() {
@@ -266,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         isCurrentlyFlipped = savedInstanceState.getBoolean("isCurrentlyFlipped", false);
@@ -277,11 +283,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     private void initGame(boolean flipBoard) {
         pieceList = new ArrayList<>();
         startTimer();
 
         if ("UP".equals(gameMode)) {
+            // 1. Khởi tạo 2 Tướng nằm úp mặt ở vị trí chuẩn
             pieceList.add(new Piece(Piece.Type.Tuong_Quan, Piece.Color.Black, 4, 0, R.drawable.b_king));
             pieceList.add(new Piece(Piece.Type.Tuong_Quan, Piece.Color.Red, 4, 9, R.drawable.r_king));
 
@@ -292,19 +301,23 @@ public class MainActivity extends AppCompatActivity {
             int[] redRes = {R.drawable.r_xe, R.drawable.r_ma, R.drawable.r_tuong, R.drawable.r_si, R.drawable.r_phao};
             int[] blackRes = {R.drawable.b_xe, R.drawable.b_ma, R.drawable.b_tuong, R.drawable.b_si, R.drawable.b_phao};
 
+
             for (int i = 0; i < 5; i++) {
                 redBag.add(new Piece(types[i], Piece.Color.Red, 0, 0, redRes[i]));
                 redBag.add(new Piece(types[i], Piece.Color.Red, 0, 0, redRes[i]));
                 blackBag.add(new Piece(types[i], Piece.Color.Black, 0, 0, blackRes[i]));
                 blackBag.add(new Piece(types[i], Piece.Color.Black, 0, 0, blackRes[i]));
             }
+
             for (int i = 0; i < 5; i++) {
                 redBag.add(new Piece(Piece.Type.Tot, Piece.Color.Red, 0, 0, R.drawable.r_tot));
                 blackBag.add(new Piece(Piece.Type.Tot, Piece.Color.Black, 0, 0, R.drawable.b_tot));
             }
 
-            java.util.Collections.shuffle(redBag);
-            java.util.Collections.shuffle(blackBag);
+
+            Collections.shuffle(redBag);
+            Collections.shuffle(blackBag);
+
 
             int[] blackStartX = {0, 1, 2, 3, 5, 6, 7, 8, 1, 7, 0, 2, 4, 6, 8};
             int[] blackStartY = {0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 3, 3, 3, 3, 3};
@@ -327,6 +340,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         } else {
+
             Piece.Type[] rowTypes = {
                     Piece.Type.Xe, Piece.Type.Ma, Piece.Type.Tuong,
                     Piece.Type.Si, Piece.Type.Tuong_Quan, Piece.Type.Si,

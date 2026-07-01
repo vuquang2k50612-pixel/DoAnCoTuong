@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.media.AudioAttributes;
@@ -18,24 +19,27 @@ import java.util.List;
 import java.util.Map;
 
 public class ChessBoardView extends View {
+
     private Bitmap boardImg;
     private List<Piece> pieces = new ArrayList<>();
     private Piece selectedPiece = null;
+
+
     private boolean isGameOver = false;
     private boolean isRedTurn = true;
     private boolean isFlipped = false;
+    private boolean isCoUpMode = false;
     public int moveCount = 0;
 
-    private boolean isCoUpMode = false;
 
     private Map<Integer, Bitmap> bitmapCache = new HashMap<>();
     private Paint shadowPaint;
     private SoundPool soundPool;
     private int soundMove, soundEat, soundCheck;
 
+
     public interface GameListener {
         void onCheckmate(String winnerText);
-
         void onTurnChanged(boolean isRedTurn);
     }
     private GameListener gameListener;
@@ -43,21 +47,26 @@ public class ChessBoardView extends View {
         this.gameListener = listener;
     }
 
+
     public ChessBoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+
         boardImg = BitmapFactory.decodeResource(getResources(), R.drawable.bancotuong);
         shadowPaint = new Paint();
-        shadowPaint.setColor(android.graphics.Color.parseColor("#66000000"));
+        shadowPaint.setColor(Color.parseColor("#66000000"));
 
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build();
         soundPool = new SoundPool.Builder().setMaxStreams(3).setAudioAttributes(audioAttributes).build();
+
         soundMove = soundPool.load(context, R.raw.move, 1);
         soundEat = soundPool.load(context, R.raw.eat, 1);
         soundCheck = soundPool.load(context, R.raw.check, 1);
     }
+
 
     private Bitmap getBitmap(int resId) {
         if (!bitmapCache.containsKey(resId)) {
@@ -82,9 +91,9 @@ public class ChessBoardView extends View {
         this.isRedTurn = true;
         this.selectedPiece = null;
         this.moveCount = 0;
-
-
         this.isCoUpMode = false;
+
+
         for (Piece p : newPieces) {
             if (p.isFaceDown) {
                 this.isCoUpMode = true;
@@ -94,9 +103,11 @@ public class ChessBoardView extends View {
         invalidate();
     }
 
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
 
         float boardMargin = getWidth() * 0.1f;
         RectF dstBoard = new RectF(boardMargin, boardMargin, getWidth() - boardMargin, getHeight() - boardMargin);
@@ -109,6 +120,7 @@ public class ChessBoardView extends View {
         canvas.drawBitmap(boardImg, null, dstBoard, null);
         canvas.restore();
 
+
         float gridWidth = dstBoard.width();
         float gridHeight = dstBoard.height();
         float paddingLeft = gridWidth * 0.025f;
@@ -119,115 +131,125 @@ public class ChessBoardView extends View {
         float cellWidth = (gridWidth - paddingLeft - paddingRight) / 8.0f;
         float cellHeight = (gridHeight - paddingTop - paddingBottom) / 9.0f;
 
-        if (pieces != null) {
-            for (Piece p : pieces) {
-                if (p == selectedPiece) continue;
+        if (pieces == null) return;
 
-                Bitmap pBitmap = p.isFaceDown ? getBitmap(R.drawable.ic_face_down) : getBitmap(p.resID);
 
-                int drawX = isFlipped ? (8 - p.x) : p.x;
-                int drawY = isFlipped ? (9 - p.y) : p.y;
+        for (Piece p : pieces) {
+            if (p == selectedPiece) continue;
 
-                float centerX = dstBoard.left + paddingLeft + (drawX * cellWidth);
-                float centerY = dstBoard.top + paddingTop + (drawY * cellHeight);
-                float pieceSize = cellWidth * 1.0f;
+            Bitmap pBitmap = p.isFaceDown ? getBitmap(R.drawable.ic_face_down) : getBitmap(p.resID);
+            int drawX = isFlipped ? (8 - p.x) : p.x;
+            int drawY = isFlipped ? (9 - p.y) : p.y;
 
-                RectF dstPiece = new RectF(centerX - pieceSize / 2, centerY - pieceSize / 2, centerX + pieceSize / 2, centerY + pieceSize / 2);
-                canvas.drawBitmap(pBitmap, null, dstPiece, null);
-            }
+            float centerX = dstBoard.left + paddingLeft + (drawX * cellWidth);
+            float centerY = dstBoard.top + paddingTop + (drawY * cellHeight);
+            float pieceSize = cellWidth * 1.0f;
 
-            if (selectedPiece != null) {
-                Bitmap pBitmap = selectedPiece.isFaceDown ? getBitmap(R.drawable.ic_face_down) : getBitmap(selectedPiece.resID);
-                int drawX = isFlipped ? (8 - selectedPiece.x) : selectedPiece.x;
-                int drawY = isFlipped ? (9 - selectedPiece.y) : selectedPiece.y;
+            RectF dstPiece = new RectF(centerX - pieceSize / 2, centerY - pieceSize / 2, centerX + pieceSize / 2, centerY + pieceSize / 2);
+            canvas.drawBitmap(pBitmap, null, dstPiece, null);
+        }
 
-                float trueX = dstBoard.left + paddingLeft + (drawX * cellWidth);
-                float trueY = dstBoard.top + paddingTop + (drawY * cellHeight);
-                float liftOffset = 20f;
-                float scaleUp = 1.15f;
-                float pieceSize = cellWidth * scaleUp;
 
-                RectF shadowRect = new RectF(trueX - (cellWidth * 0.7f) / 2, trueY - (cellWidth * 0.3f) / 2 + 10f, trueX + (cellWidth * 0.7f) / 2, trueY + (cellWidth * 0.3f) / 2 + 10f);
-                canvas.drawOval(shadowRect, shadowPaint);
+        if (selectedPiece != null) {
+            Bitmap pBitmap = selectedPiece.isFaceDown ? getBitmap(R.drawable.ic_face_down) : getBitmap(selectedPiece.resID);
+            int drawX = isFlipped ? (8 - selectedPiece.x) : selectedPiece.x;
+            int drawY = isFlipped ? (9 - selectedPiece.y) : selectedPiece.y;
 
-                RectF dstPiece = new RectF(trueX - pieceSize / 2, (trueY - liftOffset) - pieceSize / 2, trueX + pieceSize / 2, (trueY - liftOffset) + pieceSize / 2);
-                canvas.drawBitmap(pBitmap, null, dstPiece, null);
-            }
+            float trueX = dstBoard.left + paddingLeft + (drawX * cellWidth);
+            float trueY = dstBoard.top + paddingTop + (drawY * cellHeight);
+
+            float liftOffset = 20f;
+            float scaleUp = 1.15f;
+            float pieceSize = cellWidth * scaleUp;
+
+
+            RectF shadowRect = new RectF(trueX - (cellWidth * 0.7f) / 2, trueY - (cellWidth * 0.3f) / 2 + 10f,
+                    trueX + (cellWidth * 0.7f) / 2, trueY + (cellWidth * 0.3f) / 2 + 10f);
+            canvas.drawOval(shadowRect, shadowPaint);
+
+
+            RectF dstPiece = new RectF(trueX - pieceSize / 2, (trueY - liftOffset) - pieceSize / 2,
+                    trueX + pieceSize / 2, (trueY - liftOffset) + pieceSize / 2);
+            canvas.drawBitmap(pBitmap, null, dstPiece, null);
         }
     }
 
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (isGameOver) return true;
+        if (isGameOver || event.getAction() != MotionEvent.ACTION_DOWN) return true;
 
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            float touchX = event.getX();
-            float touchY = event.getY();
-            float boardMargin = getWidth() * 0.1f;
-            float gridWidth = getWidth() - 2 * boardMargin;
-            float gridHeight = getHeight() - 2 * boardMargin;
 
-            float paddingLeft = gridWidth * 0.025f;
-            float paddingTop = gridHeight * 0.025f;
-            float cellWidth = (gridWidth - paddingLeft * 2) / 8.0f;
-            float cellHeight = (gridHeight - paddingTop * 2) / 9.0f;
+        float boardMargin = getWidth() * 0.1f;
+        float gridWidth = getWidth() - 2 * boardMargin;
+        float gridHeight = getHeight() - 2 * boardMargin;
+        float paddingLeft = gridWidth * 0.025f;
+        float paddingTop = gridHeight * 0.025f;
+        float cellWidth = (gridWidth - paddingLeft * 2) / 8.0f;
+        float cellHeight = (gridHeight - paddingTop * 2) / 9.0f;
 
-            int gridX = Math.round((touchX - boardMargin - paddingLeft) / cellWidth);
-            int gridY = Math.round((touchY - boardMargin - paddingTop) / cellHeight);
+        int gridX = Math.round((event.getX() - boardMargin - paddingLeft) / cellWidth);
+        int gridY = Math.round((event.getY() - boardMargin - paddingTop) / cellHeight);
 
-            if (isFlipped) {
-                gridX = 8 - gridX;
-                gridY = 9 - gridY;
-            }
-
-            if (gridX >= 0 && gridX <= 8 && gridY >= 0 && gridY <= 9) {
-                Piece clickedPiece = getPieceAt(gridX, gridY);
-
-                if (selectedPiece == null) {
-                    if (clickedPiece != null) {
-                        if ((isRedTurn && clickedPiece.color == Piece.Color.Red) ||
-                                (!isRedTurn && clickedPiece.color == Piece.Color.Black)) {
-                            selectedPiece = clickedPiece;
-                        }
-                    }
-                } else {
-                    if (clickedPiece != null) {
-                        if (clickedPiece == selectedPiece) {
-                            selectedPiece = null;
-                        } else if (clickedPiece.color == selectedPiece.color) {
-                            selectedPiece = clickedPiece;
-                        } else {
-                            if (isSafeMove(selectedPiece, gridX, gridY, clickedPiece)) {
-                                pieces.remove(clickedPiece);
-                                selectedPiece.x = gridX;
-                                selectedPiece.y = gridY;
-                                soundPool.play(soundEat, 0.2f, 0.2f, 0, 0, 1);
-
-                                if (selectedPiece.isFaceDown) selectedPiece.isFaceDown = false;
-
-                                selectedPiece = null;
-                                processTurnEnd();
-                            }
-                        }
-                    } else {
-                        if (isSafeMove(selectedPiece, gridX, gridY, null)) {
-                            selectedPiece.x = gridX;
-                            selectedPiece.y = gridY;
-                            soundPool.play(soundMove, 1, 1, 0, 0, 1);
-
-                            if (selectedPiece.isFaceDown) selectedPiece.isFaceDown = false;
-
-                            selectedPiece = null;
-                            processTurnEnd();
-                        }
-                    }
-                }
-            } else {
-                selectedPiece = null;
-            }
-            invalidate();
+        if (isFlipped) {
+            gridX = 8 - gridX;
+            gridY = 9 - gridY;
         }
+
+
+        if (gridX < 0 || gridX > 8 || gridY < 0 || gridY > 9) {
+            selectedPiece = null;
+            invalidate();
+            return true;
+        }
+
+        Piece clickedPiece = getPieceAt(gridX, gridY);
+
+
+        if (selectedPiece == null) {
+            if (clickedPiece != null && isPieceBelongToCurrentTurn(clickedPiece)) {
+                selectedPiece = clickedPiece;
+                invalidate();
+            }
+            return true;
+        }
+
+
+        if (clickedPiece == selectedPiece) {
+            selectedPiece = null;
+        } else if (clickedPiece != null && clickedPiece.color == selectedPiece.color) {
+            selectedPiece = clickedPiece;
+        } else {
+            executeMoveIfValid(gridX, gridY, clickedPiece);
+        }
+
+        invalidate();
         return true;
+    }
+
+    private boolean isPieceBelongToCurrentTurn(Piece p) {
+        return (isRedTurn && p.color == Piece.Color.Red) || (!isRedTurn && p.color == Piece.Color.Black);
+    }
+
+    private void executeMoveIfValid(int targetX, int targetY, Piece targetPiece) {
+        if (!isSafeMove(selectedPiece, targetX, targetY, targetPiece)) return;
+
+
+        if (targetPiece != null) {
+            pieces.remove(targetPiece);
+            soundPool.play(soundEat, 0.2f, 0.2f, 0, 0, 1);
+        } else {
+            soundPool.play(soundMove, 1, 1, 0, 0, 1);
+        }
+
+        selectedPiece.x = targetX;
+        selectedPiece.y = targetY;
+
+
+        if (selectedPiece.isFaceDown) selectedPiece.isFaceDown = false;
+
+        selectedPiece = null;
+        processTurnEnd();
     }
 
     private void processTurnEnd() {
@@ -240,14 +262,14 @@ public class ChessBoardView extends View {
         if (isCheckmate(nextColor)) {
             isGameOver = true;
             String winner = isRedTurn ? "ĐEN THẮNG!" : "ĐỎ THẮNG!";
-            if(gameListener != null) {
-                gameListener.onCheckmate(winner + " (Số nước đi: " + (moveCount / 2) + ")");
-            }
+            if (gameListener != null) gameListener.onCheckmate(winner);
         }
+
         if (gameListener != null && !isGameOver) {
             gameListener.onTurnChanged(isRedTurn);
         }
     }
+
 
     private Piece getPieceAt(int x, int y) {
         for (Piece p : pieces) {
@@ -274,6 +296,9 @@ public class ChessBoardView extends View {
         return count;
     }
 
+
+
+
     private boolean isInCheck(Piece.Color myColor) {
         Piece myKing = null;
         for (Piece p : pieces) {
@@ -293,11 +318,14 @@ public class ChessBoardView extends View {
         return false;
     }
 
+
     private boolean isSafeMove(Piece p, int targetX, int targetY, Piece targetPiece) {
         if (!isValidMove(p, targetX, targetY)) return false;
+
         int oldX = p.x;
         int oldY = p.y;
         boolean isPieceEaten = false;
+
 
         p.x = targetX;
         p.y = targetY;
@@ -308,6 +336,7 @@ public class ChessBoardView extends View {
 
         boolean facing = isGeneralsFacing();
         boolean inCheck = isInCheck(isRedTurn ? Piece.Color.Red : Piece.Color.Black);
+
 
         p.x = oldX;
         p.y = oldY;
@@ -328,6 +357,7 @@ public class ChessBoardView extends View {
         }
         if (redGeneral == null || blackGeneral == null) return false;
         if (redGeneral.x != blackGeneral.x) return false;
+
         return countPiecesBetween(redGeneral.x, redGeneral.y, blackGeneral.x, blackGeneral.y) == 0;
     }
 
@@ -338,12 +368,8 @@ public class ChessBoardView extends View {
             if (x == 2 || x == 6) return Piece.Type.Tuong;
             if (x == 3 || x == 5) return Piece.Type.Si;
         }
-        if (y == 2 || y == 7) {
-            if (x == 1 || x == 7) return Piece.Type.Phao;
-        }
-        if (y == 3 || y == 6) {
-            if (x == 0 || x == 2 || x == 4 || x == 6 || x == 8) return Piece.Type.Tot;
-        }
+        if ((y == 2 || y == 7) && (x == 1 || x == 7)) return Piece.Type.Phao;
+        if ((y == 3 || y == 6) && (x == 0 || x == 2 || x == 4 || x == 6 || x == 8)) return Piece.Type.Tot;
         return null;
     }
 
@@ -365,8 +391,7 @@ public class ChessBoardView extends View {
 
         switch (ruleToApply) {
             case Xe:
-                if (dx == 0 || dy == 0) return countPiecesBetween(p.x, p.y, targetX, targetY) == 0;
-                return false;
+                return (dx == 0 || dy == 0) && countPiecesBetween(p.x, p.y, targetX, targetY) == 0;
 
             case Ma:
                 if ((dx == 1 && dy == 2) || (dx == 2 && dy == 1)) {
@@ -379,18 +404,17 @@ public class ChessBoardView extends View {
             case Phao:
                 if (dx == 0 || dy == 0) {
                     int blocks = countPiecesBetween(p.x, p.y, targetX, targetY);
-                    if (targetPiece == null) return blocks == 0;
-                    else return blocks == 1;
+                    return targetPiece == null ? (blocks == 0) : (blocks == 1);
                 }
                 return false;
 
             case Tot:
                 if (ruleColor == Piece.Color.Black) {
                     if (p.y <= 4) return dx == 0 && targetY == p.y + 1;
-                    else return (dx == 1 && targetY == p.y) || (dx == 0 && targetY == p.y + 1);
+                    return (dx == 1 && targetY == p.y) || (dx == 0 && targetY == p.y + 1);
                 } else {
                     if (p.y >= 5) return dx == 0 && targetY == p.y - 1;
-                    else return (dx == 1 && targetY == p.y) || (dx == 0 && targetY == p.y - 1);
+                    return (dx == 1 && targetY == p.y) || (dx == 0 && targetY == p.y - 1);
                 }
 
             case Tuong:
@@ -399,8 +423,7 @@ public class ChessBoardView extends View {
                         if (ruleColor == Piece.Color.Black && targetY > 4) return false;
                         if (ruleColor == Piece.Color.Red && targetY < 5) return false;
                     }
-                    if (getPieceAt((p.x + targetX) / 2, (p.y + targetY) / 2) != null) return false;
-                    return true;
+                    return getPieceAt((p.x + targetX) / 2, (p.y + targetY) / 2) == null;
                 }
                 return false;
 
@@ -427,12 +450,11 @@ public class ChessBoardView extends View {
         return true;
     }
 
+
     private boolean isCheckmate(Piece.Color myColor) {
         List<Piece> myPieces = new ArrayList<>();
         for (Piece p : pieces) {
-            if (p.color == myColor) {
-                myPieces.add(p);
-            }
+            if (p.color == myColor) myPieces.add(p);
         }
 
         for (Piece p : myPieces) {

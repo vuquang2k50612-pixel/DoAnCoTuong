@@ -54,7 +54,7 @@
         android:backgroundTint="#795548"
         android:text="LỊCH SỬ"
         android:textColor="#FFFFFF"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -202,7 +202,8 @@
             android:text="TÁI ĐẤU"
             android:textColor="#F5DEB3"
             android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="invisible" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
